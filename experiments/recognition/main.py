@@ -63,7 +63,7 @@ def main():
     if args.resume is not None:
         if os.path.isfile(args.resume):
             print("=> loading checkpoint '{}'".format(args.resume))
-            checkpoint = torch.load(args.resume)
+            checkpoint = torch.load(args.resume)    # PATH, .pt or .pth file extension.
             args.start_epoch = checkpoint['epoch'] +1
             best_pred = checkpoint['best_pred']
             acclist_train = checkpoint['acclist_train']
