@@ -14,14 +14,16 @@ import torch.nn as nn
 from ..nn import Encoding, View, Normalize
 from . import resnet
 
-__all__ = ['DeepTen', 'get_deepten', 'get_deepten_resnet50_minc']
+__all__ = ['DeepTen', 'get_deepten', 'get_deepten_resnet50_minc', 'get_deepten_resnet18_minc']
 
 class DeepTen(nn.Module):
     def __init__(self, nclass, backbone):
         super(DeepTen, self).__init__()
         self.backbone = backbone
         # copying modules from pretrained models
-        if self.backbone == 'resnet50':
+        if self.backbone == 'resnet18':
+            self.pretrained = resnet.resnet18(pretrained=False, dilated=False)
+        elif self.backbone == 'resnet50':
             self.pretrained = resnet.resnet50(pretrained=True, dilated=False)
         elif self.backbone == 'resnet101':
             self.pretrained = resnet.resnet101(pretrained=True, dilated=False)
@@ -31,7 +33,8 @@ class DeepTen(nn.Module):
             raise RuntimeError('unknown backbone: {}'.format(self.backbone))
         n_codes = 32
         self.head = nn.Sequential(
-            nn.Conv2d(2048, 128, 1),
+            # nn.Conv2d(2048, 128, 1),    # resnet50, 101, 152
+            nn.Conv2d(512, 128, 1),     # resnet18, 34
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
             Encoding(D=128,K=n_codes),
@@ -94,4 +97,23 @@ def get_deepten_resnet50_minc(pretrained=False, root='~/.encoding/models', **kwa
     >>> print(model)
     """
     return get_deepten(dataset='minc', backbone='resnet50', pretrained=pretrained,
+                       root=root, **kwargs)
+
+def get_deepten_resnet18_minc(pretrained=False, root='~/.encoding/models', **kwargs):
+    r"""DeepTen model from the paper `"Deep TEN: Texture Encoding Network"
+    <https://arxiv.org/pdf/1612.02844v1.pdf>`_
+    Parameters
+    ----------
+    pretrained : bool, default False
+        Whether to load the pretrained weights for model.
+    root : str, default '~/.encoding/models'
+        Location for keeping the model parameters.
+
+
+    Examples
+    --------
+    >>> model = get_deepten_resnet18_minc(pretrained=True)
+    >>> print(model)
+    """
+    return get_deepten(dataset='minc', backbone='resnet18', pretrained=pretrained,
                        root=root, **kwargs)

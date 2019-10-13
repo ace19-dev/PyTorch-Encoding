@@ -34,10 +34,10 @@ def main():
         torch.cuda.manual_seed(args.seed)
     # init dataloader
     transform_train, transform_val = encoding.transforms.get_transform(args.dataset)
-    trainset = encoding.datasets.get_dataset(args.dataset, root=os.path.expanduser('~/.encoding/data'),
-                                             transform=transform_train, train=True, download=True)
-    valset = encoding.datasets.get_dataset(args.dataset, root=os.path.expanduser('~/.encoding/data'),
-                                           transform=transform_val, train=False, download=True)
+    trainset = encoding.datasets.get_dataset(args.dataset,
+                                             transform=transform_train)
+    valset = encoding.datasets.get_dataset(args.dataset,
+                                           transform=transform_val)
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True)

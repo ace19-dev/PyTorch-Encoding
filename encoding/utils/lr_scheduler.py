@@ -53,6 +53,7 @@ class LR_Scheduler(object):
         if self.warmup_iters > 0 and T < self.warmup_iters:
             lr = lr * 1.0 * T / self.warmup_iters
         if epoch > self.epoch:
+            print('\n----------------------------------------')
             print('\n=>Epoches %i, learning rate = %.4f, \
                 previous best = %.4f' % (epoch, lr, best_pred))
             self.epoch = epoch

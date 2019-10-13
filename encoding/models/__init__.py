@@ -13,9 +13,9 @@ def get_segmentation_model(name, **kwargs):
     models = {
         'fcn': get_fcn,
         'psp': get_psp,
-        'atten': get_atten,
+        # 'atten': get_atten,
         'encnet': get_encnet,
-        'encnetv2': get_encnetv2,
+        # 'encnetv2': get_encnetv2,
         'deeplab': get_deeplab,
     }
     return models[name.lower()](**kwargs)

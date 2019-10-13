@@ -14,6 +14,8 @@ from torch.nn.parallel.data_parallel import DataParallel
 from torch.nn.parallel.parallel_apply import parallel_apply
 from torch.nn.parallel.scatter_gather import scatter
 
+from efficientnet_pytorch import EfficientNet
+
 from . import resnet
 from ..utils import batch_pix_accuracy, batch_intersection_union
 
@@ -44,6 +46,8 @@ class BaseNet(nn.Module):
         elif backbone == 'resnet152':
             self.pretrained = resnet.resnet152(pretrained=True, dilated=dilated,
                                                norm_layer=norm_layer, root=root)
+        # elif backbone == 'efficientnet-b6':
+        #     self.pretrained = EfficientNet.from_pretrained('efficientnet-b6')
         else:
             raise RuntimeError('unknown backbone: {}'.format(backbone))
         # bilinear upsample options
@@ -73,6 +77,7 @@ class BaseNet(nn.Module):
             c3 = self.pretrained.layer3(c2)
             c4 = self.pretrained.layer4(c3)
         return c1, c2, c3, c4
+        # return self.pretrained.extract_features(x)
 
     def evaluate(self, x, target=None):
         pred = self.forward(x)

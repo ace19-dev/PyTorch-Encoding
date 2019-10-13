@@ -7,6 +7,8 @@ import torch.nn as nn
 from ..nn import GlobalAvgPool2d
 from ..models.model_store import get_model_file
 
+import torchvision.models as torch_models
+
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'BasicBlock', 'Bottleneck']
 
@@ -265,10 +267,14 @@ def resnet50(pretrained=False, root='~/.encoding/models', **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    # model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    # if pretrained:
+    #     model.load_state_dict(torch.load(
+    #         get_model_file('resnet50', root=root)), strict=False)
+    # return model
+    model = torch_models.resnet50()
     if pretrained:
-        model.load_state_dict(torch.load(
-            get_model_file('resnet50', root=root)), strict=False)
+        model = torch_models.resnet50(pretrained=True)
     return model
 
 

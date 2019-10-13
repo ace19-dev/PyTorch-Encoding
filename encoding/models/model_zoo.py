@@ -34,6 +34,7 @@ def get_model(name, **kwargs):
         'resnet101': resnet101,
         'resnet152': resnet152,
         'cifar_resnet20': cifar_resnet20,
+        'deepten_resnet18_minc': get_deepten_resnet18_minc,
         'deepten_resnet50_minc': get_deepten_resnet50_minc,
         'fcn_resnet50_pcontext': get_fcn_resnet50_pcontext,
         'encnet_resnet50_pcontext': get_encnet_resnet50_pcontext,

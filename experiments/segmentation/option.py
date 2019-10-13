@@ -10,14 +10,13 @@ import torch
 
 class Options():
     def __init__(self):
-        parser = argparse.ArgumentParser(description='PyTorch \
-            Segmentation')
+        parser = argparse.ArgumentParser(description='PyTorch Segmentation')
         # model and dataset 
         parser.add_argument('--model', type=str, default='encnet',
                             help='model name (default: encnet)')
         parser.add_argument('--backbone', type=str, default='resnet50',
                             help='backbone name (default: resnet50)')
-        parser.add_argument('--dataset', type=str, default='ade20k',
+        parser.add_argument('--dataset', type=str, default='steel',
                             help='dataset name (default: pascal12)')
         parser.add_argument('--data-folder', type=str,
                             default=os.path.join(os.environ['HOME'], 'data'),
@@ -25,9 +24,9 @@ class Options():
                             $(HOME)/data)')
         parser.add_argument('--workers', type=int, default=16,
                             metavar='N', help='dataloader threads')
-        parser.add_argument('--base-size', type=int, default=520,
+        parser.add_argument('--base-size', type=int, default=1600,
                             help='base image size')
-        parser.add_argument('--crop-size', type=int, default=480,
+        parser.add_argument('--crop-size', type=int, default=400,
                             help='crop image size')
         parser.add_argument('--train-split', type=str, default='train',
                             help='dataset train split (default: train)')
@@ -40,7 +39,7 @@ class Options():
                             help='Semantic Encoding Loss SE-loss')
         parser.add_argument('--se-weight', type=float, default=0.2,
                             help='SE-loss weight (default: 0.2)')
-        parser.add_argument('--epochs', type=int, default=None, metavar='N',
+        parser.add_argument('--epochs', type=int, default=25, metavar='N',
                             help='number of epochs to train (default: auto)')
         parser.add_argument('--start_epoch', type=int, default=0,
                             metavar='N', help='start epochs (default:0)')
@@ -65,7 +64,9 @@ class Options():
         parser.add_argument('--seed', type=int, default=1, metavar='S',
                             help='random seed (default: 1)')
         # checking point
-        parser.add_argument('--resume', type=str, default=None,
+        parser.add_argument('--resume', type=str,
+                            # default=None,
+                            default='pre-trained/model_best.pth.tar',
                             help='put the path to resuming file if needed')
         parser.add_argument('--checkname', type=str, default='default',
                             help='set the checkpoint name')
@@ -84,6 +85,9 @@ class Options():
         # test option
         parser.add_argument('--test-folder', type=str, default=None,
                             help='path to test image folder')
+        parser.add_argument('--result', type=str,
+                            default='result',
+                            help='directory to save .csv file')
         # the parser
         self.parser = parser
 
@@ -99,6 +103,7 @@ class Options():
                 'pcontext': 80,
                 'ade20k': 180,
                 'citys': 240,
+                'steel':25,
             }
             args.epochs = epoches[args.dataset.lower()]
         if args.lr is None:
@@ -109,6 +114,7 @@ class Options():
                 'pcontext': 0.001,
                 'ade20k': 0.004,
                 'citys': 0.004,
+                'steel': 0.001,
             }
             args.lr = lrs[args.dataset.lower()] / 16 * args.batch_size
         print(args)

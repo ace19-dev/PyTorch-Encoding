@@ -9,3 +9,5 @@ docs/html/
 encoding/_ext/
 encoding.egg-info/
 venv/
+run/
+pre-trained/

@@ -5,6 +5,7 @@ from torch.autograd import Variable
 import numpy as np
 __all__ = ['SegmentationLosses', 'OhemCrossEntropy2d', 'OHEMSegmentationLosses']
 
+
 class SegmentationLosses(nn.CrossEntropyLoss):
     """2D Cross Entropy Loss with Auxilary Loss"""
     def __init__(self, se_loss=False, se_weight=0.2, nclass=-1,
@@ -18,9 +19,9 @@ class SegmentationLosses(nn.CrossEntropyLoss):
         self.aux_weight = aux_weight
         self.bceloss = nn.BCELoss(weight) 
 
-    def forward(self, *inputs):
+    def forward(self, *inputs, target):
         if not self.se_loss and not self.aux:
-            return super(SegmentationLosses, self).forward(*inputs)
+            return super(SegmentationLosses, self).forward(*inputs, target)
         elif not self.se_loss:
             pred1, pred2, target = tuple(inputs)
             loss1 = super(SegmentationLosses, self).forward(pred1, target)
@@ -80,10 +81,10 @@ class OhemCrossEntropy2d(nn.Module):
         """
         assert not target.requires_grad
         assert predict.dim() == 4
-        assert target.dim() == 3
-        assert predict.size(0) == target.size(0), "{0} vs {1} ".format(predict.size(0), target.size(0))
-        assert predict.size(2) == target.size(1), "{0} vs {1} ".format(predict.size(2), target.size(1))
-        assert predict.size(3) == target.size(2), "{0} vs {1} ".format(predict.size(3), target.size(3))
+        assert target.dim() == 4
+        # assert predict.size(0) == target.size(0), "{0} vs {1} ".format(predict.size(0), target.size(0))
+        # assert predict.size(2) == target.size(1), "{0} vs {1} ".format(predict.size(2), target.size(1))
+        # assert predict.size(3) == target.size(2), "{0} vs {1} ".format(predict.size(3), target.size(3))
 
         n, c, h, w = predict.size()
         input_label = target.data.cpu().numpy().ravel().astype(np.int32)
