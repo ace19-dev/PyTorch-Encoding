@@ -84,6 +84,7 @@ class Trainer():
             params_list.append({'params': model.auxlayer.parameters(), 'lr': args.lr*10})
         optimizer = torch.optim.SGD(params_list, lr=args.lr,
             momentum=args.momentum, weight_decay=args.weight_decay)
+        # TODO: use adam optimizer
 
         # criterions
         # self.criterion = SegmentationLosses(se_loss=args.se_loss,
