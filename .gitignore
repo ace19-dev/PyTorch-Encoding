@@ -11,3 +11,4 @@ encoding.egg-info/
 venv/
 run/
 pre-trained/
+torch_encoding.egg-info/
