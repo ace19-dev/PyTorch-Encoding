@@ -10,25 +10,30 @@
 """Synchronized Cross-GPU Batch Normalization functions"""
 import torch
 import torch.cuda.comm as comm
-from torch.autograd import Variable, Function
+from torch.autograd import Function
 from torch.autograd.function import once_differentiable
-from .. import lib
+
+from encoding import cpu
+if torch.cuda.device_count() > 0:
+    from encoding import gpu
 
 __all__ = ['moments', 'syncbatchnorm', 'inp_syncbatchnorm']
 
-class moments(Function):
+class moments_(Function):
     @staticmethod
     def forward(ctx, x):
         if x.is_cuda:
-            ex, ex2 = lib.gpu.expectation_forward(x)
+            ex, ex2 = gpu.expectation_forward(x)
         else:
             raise NotImplemented
+        ctx.save_for_backward(x)
         return ex, ex2
 
     @staticmethod
     def backward(ctx, dex, dex2):
-        if x.is_cuda:
-            dx = lib.gpu.expectation_backward(x, dex, dex2)
+        x, = ctx.saved_tensors
+        if dex.is_cuda:
+            dx = gpu.expectation_backward(x, dex, dex2)
         else:
             raise NotImplemented
         return dx
@@ -55,7 +60,7 @@ class syncbatchnorm_(Function):
 
         if ctx.training:
             if x.is_cuda:
-                _ex, _exs = lib.gpu.expectation_forward(x)
+                _ex, _exs = gpu.expectation_forward(x)
             else:
                 raise NotImplemented
 
@@ -92,9 +97,9 @@ class syncbatchnorm_(Function):
 
         # BN forward + activation
         if x.is_cuda:
-            y = lib.gpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
+            y = gpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
         else:
-            y = lib.cpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
+            y = cpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
 
         # Output
         ctx.save_for_backward(x, _ex, _exs, gamma, beta)
@@ -109,7 +114,7 @@ class syncbatchnorm_(Function):
         # BN backward
         if dz.is_cuda:
             dx, _dex, _dexs, dgamma, dbeta = \
-                lib.gpu.batchnorm_backward(dz, x, _ex, _exs, gamma, beta, ctx.eps)
+                gpu.batchnorm_backward(dz, x, _ex, _exs, gamma, beta, ctx.eps)
         else:
             raise NotImplemented
 
@@ -135,7 +140,7 @@ class syncbatchnorm_(Function):
                     ctx.worker_queue.task_done()
 
             if x.is_cuda:
-                dx_ = lib.gpu.expectation_backward(x, _dex, _dexs)
+                dx_ = gpu.expectation_backward(x, _dex, _dexs)
             else:
                 raise NotImplemented
             dx = dx + dx_
@@ -156,7 +161,7 @@ class syncbatchnorm_(Function):
 def _act_forward(ctx, x):
     if ctx.activation.lower() == "leaky_relu":
         if x.is_cuda:
-            lib.gpu.leaky_relu_forward(x, ctx.slope)
+            gpu.leaky_relu_forward(x, ctx.slope)
         else:
             raise NotImplemented
     else:
@@ -165,7 +170,7 @@ def _act_forward(ctx, x):
 def _act_backward(ctx, x, dx):
     if ctx.activation.lower() == "leaky_relu":
         if x.is_cuda:
-            lib.gpu.leaky_relu_backward(x, dx, ctx.slope)
+            gpu.leaky_relu_backward(x, dx, ctx.slope)
         else:
             raise NotImplemented
     else:
@@ -192,7 +197,7 @@ class inp_syncbatchnorm_(Function):
 
         if ctx.training:
             if x.is_cuda:
-                _ex, _exs = lib.gpu.expectation_forward(x)
+                _ex, _exs = gpu.expectation_forward(x)
             else:
                 raise NotImplemented
 
@@ -230,7 +235,7 @@ class inp_syncbatchnorm_(Function):
 
         # BN forward + activation
         if x.is_cuda:
-            lib.gpu.batchnorm_inp_forward(x, _ex, _exs, gamma, beta, ctx.eps)
+            gpu.batchnorm_inp_forward(x, _ex, _exs, gamma, beta, ctx.eps)
         else:
             raise NotImplemented
 
@@ -252,7 +257,7 @@ class inp_syncbatchnorm_(Function):
         # BN backward
         if dz.is_cuda:
             dx, _dex, _dexs, dgamma, dbeta = \
-                lib.gpu.batchnorm_inp_backward(dz, z, _ex, _exs, gamma, beta, ctx.eps)
+                gpu.batchnorm_inp_backward(dz, z, _ex, _exs, gamma, beta, ctx.eps)
         else:
             raise NotImplemented
 
@@ -278,7 +283,7 @@ class inp_syncbatchnorm_(Function):
                     ctx.worker_queue.task_done()
 
             if z.is_cuda:
-                lib.gpu.expectation_inp_backward(dx, z, _dex, _dexs, _ex, _exs, gamma, beta, ctx.eps)
+                gpu.expectation_inp_backward(dx, z, _dex, _dexs, _ex, _exs, gamma, beta, ctx.eps)
             else:
                 raise NotImplemented
 
@@ -295,5 +300,6 @@ class inp_syncbatchnorm_(Function):
             ctx.master_queue = extra["master_queue"]
             ctx.worker_queue = extra["worker_queue"]
 
+moments = moments_.apply
 syncbatchnorm = syncbatchnorm_.apply
 inp_syncbatchnorm = inp_syncbatchnorm_.apply

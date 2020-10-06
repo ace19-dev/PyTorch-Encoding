@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 
 from ..nn import Encoding, View, Normalize
-from . import resnet
+from .backbone import resnet50s, resnet101s, resnet152s
 
 __all__ = ['DeepTen', 'get_deepten', 'get_deepten_resnet50_minc', 'get_deepten_resnet18_minc']
 
@@ -21,14 +21,19 @@ class DeepTen(nn.Module):
         super(DeepTen, self).__init__()
         self.backbone = backbone
         # copying modules from pretrained models
+<<<<<<< HEAD
         if self.backbone == 'resnet18':
             self.pretrained = resnet.resnet18(pretrained=False, dilated=False)
         elif self.backbone == 'resnet50':
             self.pretrained = resnet.resnet50(pretrained=True, dilated=False)
+=======
+        if self.backbone == 'resnet50':
+            self.pretrained = resnet50s(pretrained=True, dilated=False)
+>>>>>>> upstream/master
         elif self.backbone == 'resnet101':
-            self.pretrained = resnet.resnet101(pretrained=True, dilated=False)
+            self.pretrained = resnet101s(pretrained=True, dilated=False)
         elif self.backbone == 'resnet152':
-            self.pretrained = resnet.resnet152(pretrained=True, dilated=False)
+            self.pretrained = resnet152s(pretrained=True, dilated=False)
         else:
             raise RuntimeError('unknown backbone: {}'.format(self.backbone))
         n_codes = 32

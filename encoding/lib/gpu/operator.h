@@ -1,5 +1,21 @@
 #include <torch/extension.h>
+#include <ATen/ATen.h>
 #include <vector>
+
+std::vector<at::Tensor> box_encoder(
+  const int N_img,
+  const at::Tensor& bbox_input,
+  const at::Tensor& bbox_offsets,
+  const at::Tensor& labels_input,
+  const at::Tensor& dbox,
+  const float criteria = 0.5);
+
+std::vector<at::Tensor> random_horiz_flip(
+  at::Tensor& img,
+  at::Tensor& bboxes,
+  const at::Tensor& bbox_offsets,
+  const float p,
+  const bool nhwc);
 
 at::Tensor ROIAlign_Forward_CUDA(
   const at::Tensor input,
@@ -102,45 +118,15 @@ at::Tensor Expectation_Inp_Backward_CUDA(
   const at::Tensor beta_,
   float eps);
 
-at::Tensor Encoding_Dist_Inference_Forward_CUDA(
-  const at::Tensor X_,
-  const at::Tensor C_,
-  const at::Tensor STD_);
-
-std::vector<at::Tensor> Encoding_Dist_Inference_Backward_CUDA(
-  const at::Tensor GKD_,
-  const at::Tensor KD_,
-  const at::Tensor X_,
-  const at::Tensor C_,
-  const at::Tensor STD_);
-
-std::vector<at::Tensor> Encoding_Dist_Forward_CUDA(
-  const at::Tensor X,
-  const at::Tensor C,
-  double eps);
-
-std::vector<at::Tensor> Encoding_Dist_Backward_CUDA(
-  const at::Tensor GKD_,
-  const at::Tensor GSTD_,
-  const at::Tensor KD_,
-  const at::Tensor X_,
-  const at::Tensor C_,
-  const at::Tensor STD_);
-
-at::Tensor AggregateV2_Forward_CUDA(
-  const at::Tensor A_,
-  const at::Tensor X_,
-  const at::Tensor C_,
-  const at::Tensor STD_);
-
-std::vector<at::Tensor> AggregateV2_Backward_CUDA(
-  const at::Tensor GE_,
-  const at::Tensor E_,
-  const at::Tensor A_,
-  const at::Tensor X_,
-  const at::Tensor C_,
-  const at::Tensor STD_);
-
 void LeakyRelu_Forward_CUDA(at::Tensor z, float slope);
 
 void LeakyRelu_Backward_CUDA(at::Tensor z, at::Tensor dz, float slope);
+
+void CONV_RECTIFY_CUDA(
+  at::Tensor& output,
+  const at::Tensor& input,
+  at::IntArrayRef kernel_size,
+  at::IntArrayRef stride,
+  at::IntArrayRef padding,
+  at::IntArrayRef dilation,
+  bool avg_mode);
